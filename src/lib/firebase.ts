@@ -57,14 +57,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export async function testConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    return true;
+    const snap = await getDocFromServer(doc(db, 'test', 'status_test'));
+    return snap.exists();
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn("Please check your Firebase configuration: client is offline.");
+    if (error instanceof Error && error.message.includes('offline')) {
+      console.warn("Firebase client is offline:", error.message);
       return false;
     }
-    // Document might not exist, which is fine and means server was reached
+    // Connected to server even if document is missing
     return true;
   }
 }
