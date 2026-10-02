@@ -1,0 +1,6 @@
+{
+  "name": "LogiShip - Manajemen Muatan & Penumpang Kapal",
+  "description": "Sistem informasi manajemen muatan kargo dan manifest penumpang kapal laut dengan tracking real-time, master data, analitik operasional, dan laporan terintegrasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

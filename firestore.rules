@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Master Data Kapal
+    match /vessels/{vesselId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(vesselId)
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && request.resource.data.code is string && request.resource.data.code.size() <= 30;
+      allow delete: if isSignedIn() && isValidId(vesselId);
+    }
+
+    // Transaksi Penumpang
+    match /passengers/{passengerId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(passengerId)
+        && request.resource.data.ticketNumber is string && request.resource.data.ticketNumber.size() <= 50
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100;
+      allow delete: if isSignedIn() && isValidId(passengerId);
+    }
+
+    // Transaksi Muatan Kargo
+    match /cargos/{cargoId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(cargoId)
+        && request.resource.data.billOfLading is string && request.resource.data.billOfLading.size() <= 50
+        && request.resource.data.shipper is string && request.resource.data.shipper.size() <= 100;
+      allow delete: if isSignedIn() && isValidId(cargoId);
+    }
+
+    // Jadwal Pelayaran
+    match /schedules/{scheduleId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(scheduleId)
+        && request.resource.data.voyageNumber is string && request.resource.data.voyageNumber.size() <= 50;
+      allow delete: if isSignedIn() && isValidId(scheduleId);
+    }
+
+    // Histori Tracking & Log Aktivitas
+    match /tracking_logs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId)
+        && request.resource.data.vesselName is string && request.resource.data.vesselName.size() <= 100;
+      allow update, delete: if isSignedIn() && isValidId(logId);
+    }
+
+    // Notifikasi Otomatis
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(notificationId)
+        && request.resource.data.title is string && request.resource.data.title.size() <= 100;
+      allow delete: if isSignedIn() && isValidId(notificationId);
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(userId);
+      allow delete: if isSignedIn() && isValidId(userId);
+    }
+  }
+}

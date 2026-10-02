@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "Vessel": {
+      "title": "Vessel",
+      "description": "Master data kapal laut armada operasional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "code": { "type": "string", "maxLength": 30 },
+        "type": { "type": "string", "enum": ["Penumpang & Ro-Ro", "Petikemas / Kontainer", "Kapal Cepat / Ferry", "Kargo Curah / General Cargo"] },
+        "passengerCapacity": { "type": "number" },
+        "cargoCapacityTon": { "type": "number" },
+        "callSign": { "type": "string", "maxLength": 30 },
+        "captainName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["Berlayar", "Bersandar", "Proses Muat", "Perbaikan"] },
+        "currentPort": { "type": "string", "maxLength": 100 },
+        "destinationPort": { "type": "string", "maxLength": 100 },
+        "speedKnots": { "type": "number" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "code", "type", "passengerCapacity", "cargoCapacityTon", "status"]
+    },
+    "Passenger": {
+      "title": "Passenger",
+      "description": "Data manifest dan tiket penumpang kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketNumber": { "type": "string", "maxLength": 50 },
+        "name": { "type": "string", "maxLength": 100 },
+        "nik": { "type": "string", "maxLength": 30 },
+        "gender": { "type": "string", "enum": ["Laki-laki", "Perempuan"] },
+        "age": { "type": "number" },
+        "phone": { "type": "string", "maxLength": 25 },
+        "vesselId": { "type": "string", "maxLength": 60 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "originPort": { "type": "string", "maxLength": 100 },
+        "destinationPort": { "type": "string", "maxLength": 100 },
+        "departureDate": { "type": "string" },
+        "cabinClass": { "type": "string", "enum": ["VIP", "Kelas 1", "Bisnis", "Ekonomi"] },
+        "seatNumber": { "type": "string", "maxLength": 20 },
+        "ticketPrice": { "type": "number" },
+        "luggageKg": { "type": "number" },
+        "status": { "type": "string", "enum": ["Sudah Boarding", "Check-in", "Menunggu", "Batal"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["ticketNumber", "name", "nik", "vesselName", "cabinClass", "status", "ticketPrice"]
+    },
+    "Cargo": {
+      "title": "Cargo",
+      "description": "Data manifest muatan logistik kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "billOfLading": { "type": "string", "maxLength": 50 },
+        "shipper": { "type": "string", "maxLength": 100 },
+        "consignee": { "type": "string", "maxLength": 100 },
+        "cargoType": { "type": "string", "enum": ["Petikemas 20ft", "Petikemas 40ft", "Kendaraan Truk/Fuso", "Kendaraan Pribadi/R4", "Barang Umum / General Cargo", "Curah / Bulk", "Reefer / Berpendingin"] },
+        "itemDescription": { "type": "string", "maxLength": 200 },
+        "weightTon": { "type": "number" },
+        "volumeCbm": { "type": "number" },
+        "containerOrVehicleNo": { "type": "string", "maxLength": 40 },
+        "vesselId": { "type": "string", "maxLength": 60 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "deckPosition": { "type": "string", "maxLength": 50 },
+        "originPort": { "type": "string", "maxLength": 100 },
+        "destinationPort": { "type": "string", "maxLength": 100 },
+        "freightFee": { "type": "number" },
+        "status": { "type": "string", "enum": ["Siap Muat", "Loading", "On-Board", "Bongkar", "Selesai", "Tertahan"] },
+        "hazardous": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["billOfLading", "shipper", "consignee", "cargoType", "weightTon", "vesselName", "status", "freightFee"]
+    },
+    "Schedule": {
+      "title": "Schedule",
+      "description": "Jadwal pelayaran kapal laut",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "voyageNumber": { "type": "string", "maxLength": 50 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "originPort": { "type": "string", "maxLength": 100 },
+        "destinationPort": { "type": "string", "maxLength": 100 },
+        "berth": { "type": "string", "maxLength": 50 },
+        "departureTime": { "type": "string" },
+        "arrivalTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["Tepat Waktu", "Boarding", "Berlayar", "Tiba", "Ditunda", "Dibatalkan"] },
+        "estimatedPassengers": { "type": "number" },
+        "estimatedCargoTon": { "type": "number" }
+      },
+      "required": ["voyageNumber", "vesselName", "originPort", "destinationPort", "departureTime", "arrivalTime", "status"]
+    },
+    "TrackingLog": {
+      "title": "TrackingLog",
+      "description": "Histori aktivitas dan log pelacakan pelayaran kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "voyageNumber": { "type": "string", "maxLength": 50 },
+        "eventType": { "type": "string", "enum": ["Keberangkatan", "Kedatangan", "Loading Crane", "Check-in Penumpang", "Izin Syahbandar (SPB)", "Cuaca Laut", "Inspeksi Palka"] },
+        "description": { "type": "string", "maxLength": 300 },
+        "location": { "type": "string", "maxLength": 100 },
+        "officer": { "type": "string", "maxLength": 100 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["vesselName", "eventType", "description", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Notifikasi otomatis sistem operasional pelabuhan dan kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 100 },
+        "message": { "type": "string", "maxLength": 300 },
+        "type": { "type": "string", "enum": ["warning", "info", "success", "alert"] },
+        "category": { "type": "string", "enum": ["Muatan", "Penumpang", "Jadwal", "Cuaca", "Sistem"] },
+        "read": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["title", "message", "type", "timestamp"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Data profil pengguna dan petugas sistem kapal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["Super Admin", "Petugas Manifest", "Supervisor Kargo", "Nahkoda / Perwira"] },
+        "port": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/vessels/{vesselId}": {
+      "schema": "Vessel",
+      "description": "Koleksi data master armada kapal laut"
+    },
+    "/passengers/{passengerId}": {
+      "schema": "Passenger",
+      "description": "Koleksi transaksi manifest penumpang"
+    },
+    "/cargos/{cargoId}": {
+      "schema": "Cargo",
+      "description": "Koleksi transaksi manifest muatan kargo"
+    },
+    "/schedules/{scheduleId}": {
+      "schema": "Schedule",
+      "description": "Koleksi jadwal pelayaran kapal"
+    },
+    "/tracking_logs/{logId}": {
+      "schema": "TrackingLog",
+      "description": "Koleksi histori pelacakan dan log aktivitas pelayaran"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Koleksi notifikasi otomatis operasional"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Koleksi profil dan hak akses pengguna sistem"
+    }
+  }
+}
