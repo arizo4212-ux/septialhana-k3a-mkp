@@ -66,39 +66,51 @@ export const VoyageSchedule: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const [successToast, setSuccessToast] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!voyageNumber.trim()) return;
 
-    if (editingId) {
-      await updateSchedule(editingId, {
-        voyageNumber,
-        vesselName,
-        originPort,
-        destinationPort,
-        berth,
-        departureTime,
-        arrivalTime,
-        status,
-        estimatedPassengers: Number(estimatedPassengers),
-        estimatedCargoTon: Number(estimatedCargoTon)
-      });
-    } else {
-      await addSchedule({
-        voyageNumber,
-        vesselName,
-        originPort,
-        destinationPort,
-        berth,
-        departureTime,
-        arrivalTime,
-        status,
-        estimatedPassengers: Number(estimatedPassengers),
-        estimatedCargoTon: Number(estimatedCargoTon)
-      });
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        await updateSchedule(editingId, {
+          voyageNumber: voyageNumber.trim(),
+          vesselName,
+          originPort,
+          destinationPort,
+          berth: berth.trim(),
+          departureTime,
+          arrivalTime,
+          status,
+          estimatedPassengers: Number(estimatedPassengers) || 0,
+          estimatedCargoTon: Number(estimatedCargoTon) || 0
+        });
+        setSuccessToast(`Jadwal pelayaran ${voyageNumber} berhasil diperbarui!`);
+      } else {
+        await addSchedule({
+          voyageNumber: voyageNumber.trim(),
+          vesselName,
+          originPort,
+          destinationPort,
+          berth: berth.trim(),
+          departureTime,
+          arrivalTime,
+          status,
+          estimatedPassengers: Number(estimatedPassengers) || 0,
+          estimatedCargoTon: Number(estimatedCargoTon) || 0
+        });
+        setSuccessToast(`Jadwal pelayaran baru ${voyageNumber} berhasil dibuat!`);
+      }
+      setIsModalOpen(false);
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err) {
+      console.error('Error submitting schedule:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -141,6 +153,13 @@ export const VoyageSchedule: React.FC = () => {
       </div>
 
       {/* Filter and Search */}
+      {successToast && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

@@ -227,9 +227,12 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id,
       updatedAt: new Date().toISOString()
     };
+    
+    // Immediate state update so UI reflects the addition instantly
+    setVessels(prev => [newDoc, ...prev.filter(v => v.id !== id)]);
+
     try {
       await setDoc(doc(db, 'vessels', id), newDoc);
-      setVessels(prev => [newDoc, ...prev]);
 
       // Add auto tracking log
       await addTrackingLog({
@@ -242,26 +245,26 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16)
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `vessels/${id}`);
+      console.error('Firestore save vessel error:', err);
     }
   };
 
   const updateVessel = async (id: string, updates: Partial<Vessel>) => {
+    const updatedItem = { ...updates, updatedAt: new Date().toISOString() };
+    setVessels(prev => prev.map(v => v.id === id ? { ...v, ...updatedItem } : v));
     try {
-      const updatedItem = { ...updates, updatedAt: new Date().toISOString() };
       await updateDoc(doc(db, 'vessels', id), updatedItem);
-      setVessels(prev => prev.map(v => v.id === id ? { ...v, ...updatedItem } : v));
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `vessels/${id}`);
+      console.error('Firestore update vessel error:', err);
     }
   };
 
   const deleteVessel = async (id: string) => {
+    setVessels(prev => prev.filter(v => v.id !== id));
     try {
       await deleteDoc(doc(db, 'vessels', id));
-      setVessels(prev => prev.filter(v => v.id !== id));
     } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `vessels/${id}`);
+      console.error('Firestore delete vessel error:', err);
     }
   };
 
@@ -273,11 +276,14 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id,
       createdAt: new Date().toISOString()
     };
+
+    // Immediate state update
+    setPassengers(prev => [newDoc, ...prev.filter(p => p.id !== id)]);
+
     try {
       await setDoc(doc(db, 'passengers', id), newDoc);
-      setPassengers(prev => [newDoc, ...prev]);
 
-      // Add automatic notification if ticket price high or boarding
+      // Add automatic notification if boarding
       if (newDoc.status === 'Sudah Boarding') {
         const notifId = 'notif-' + Date.now().toString(36);
         const notif: OperationalNotification = {
@@ -292,25 +298,25 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await setDoc(doc(db, 'notifications', notifId), notif);
       }
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `passengers/${id}`);
+      console.error('Firestore save passenger error:', err);
     }
   };
 
   const updatePassenger = async (id: string, updates: Partial<Passenger>) => {
+    setPassengers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     try {
       await updateDoc(doc(db, 'passengers', id), updates);
-      setPassengers(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `passengers/${id}`);
+      console.error('Firestore update passenger error:', err);
     }
   };
 
   const deletePassenger = async (id: string) => {
+    setPassengers(prev => prev.filter(p => p.id !== id));
     try {
       await deleteDoc(doc(db, 'passengers', id));
-      setPassengers(prev => prev.filter(p => p.id !== id));
     } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `passengers/${id}`);
+      console.error('Firestore delete passenger error:', err);
     }
   };
 
@@ -322,9 +328,12 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       id,
       createdAt: new Date().toISOString()
     };
+
+    // Immediate state update
+    setCargos(prev => [newDoc, ...prev.filter(c => c.id !== id)]);
+
     try {
       await setDoc(doc(db, 'cargos', id), newDoc);
-      setCargos(prev => [newDoc, ...prev]);
 
       // Add tracking log for loading
       await addTrackingLog({
@@ -337,25 +346,25 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16)
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `cargos/${id}`);
+      console.error('Firestore save cargo error:', err);
     }
   };
 
   const updateCargo = async (id: string, updates: Partial<Cargo>) => {
+    setCargos(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
     try {
       await updateDoc(doc(db, 'cargos', id), updates);
-      setCargos(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `cargos/${id}`);
+      console.error('Firestore update cargo error:', err);
     }
   };
 
   const deleteCargo = async (id: string) => {
+    setCargos(prev => prev.filter(c => c.id !== id));
     try {
       await deleteDoc(doc(db, 'cargos', id));
-      setCargos(prev => prev.filter(c => c.id !== id));
     } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `cargos/${id}`);
+      console.error('Firestore delete cargo error:', err);
     }
   };
 
@@ -363,29 +372,31 @@ export const ShipDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const addSchedule = async (data: Omit<Schedule, 'id'>) => {
     const id = 'sch-' + Date.now().toString(36);
     const newDoc: Schedule = { ...data, id };
+
+    setSchedules(prev => [newDoc, ...prev.filter(s => s.id !== id)]);
+
     try {
       await setDoc(doc(db, 'schedules', id), newDoc);
-      setSchedules(prev => [newDoc, ...prev]);
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, `schedules/${id}`);
+      console.error('Firestore save schedule error:', err);
     }
   };
 
   const updateSchedule = async (id: string, updates: Partial<Schedule>) => {
+    setSchedules(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     try {
       await updateDoc(doc(db, 'schedules', id), updates);
-      setSchedules(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `schedules/${id}`);
+      console.error('Firestore update schedule error:', err);
     }
   };
 
   const deleteSchedule = async (id: string) => {
+    setSchedules(prev => prev.filter(s => s.id !== id));
     try {
       await deleteDoc(doc(db, 'schedules', id));
-      setSchedules(prev => prev.filter(s => s.id !== id));
     } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `schedules/${id}`);
+      console.error('Firestore delete schedule error:', err);
     }
   };
 

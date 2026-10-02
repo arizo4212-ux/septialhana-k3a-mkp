@@ -104,53 +104,65 @@ export const CargoManifest: React.FC<CargoManifestProps> = ({
     setIsModalOpen(true);
   };
 
+  const [successToast, setSuccessToast] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!billOfLading.trim() || !shipper.trim() || !consignee.trim()) return;
 
+    setIsSubmitting(true);
     const matchedVessel = vessels.find(v => v.name === vesselName);
 
-    if (editingId) {
-      await updateCargo(editingId, {
-        billOfLading,
-        shipper,
-        consignee,
-        cargoType,
-        itemDescription,
-        weightTon: Number(weightTon),
-        volumeCbm: Number(volumeCbm),
-        containerOrVehicleNo,
-        vesselId: matchedVessel?.id || 'ves-001',
-        vesselName,
-        deckPosition,
-        originPort,
-        destinationPort,
-        freightFee: Number(freightFee),
-        status,
-        hazardous
-      });
-    } else {
-      await addCargo({
-        billOfLading,
-        shipper,
-        consignee,
-        cargoType,
-        itemDescription,
-        weightTon: Number(weightTon),
-        volumeCbm: Number(volumeCbm),
-        containerOrVehicleNo,
-        vesselId: matchedVessel?.id || 'ves-001',
-        vesselName,
-        deckPosition,
-        originPort,
-        destinationPort,
-        freightFee: Number(freightFee),
-        status,
-        hazardous
-      });
+    try {
+      if (editingId) {
+        await updateCargo(editingId, {
+          billOfLading: billOfLading.trim(),
+          shipper: shipper.trim(),
+          consignee: consignee.trim(),
+          cargoType,
+          itemDescription: itemDescription.trim() || 'General Cargo',
+          weightTon: Number(weightTon) || 1,
+          volumeCbm: Number(volumeCbm) || 1,
+          containerOrVehicleNo: containerOrVehicleNo.trim() || 'NON-UNIT',
+          vesselId: matchedVessel?.id || 'ves-001',
+          vesselName,
+          deckPosition: deckPosition.trim() || 'Palka Utama',
+          originPort,
+          destinationPort,
+          freightFee: Number(freightFee) || 0,
+          status,
+          hazardous
+        });
+        setSuccessToast(`Manifest kargo B/L ${billOfLading} berhasil diperbarui!`);
+      } else {
+        await addCargo({
+          billOfLading: billOfLading.trim(),
+          shipper: shipper.trim(),
+          consignee: consignee.trim(),
+          cargoType,
+          itemDescription: itemDescription.trim() || 'General Cargo',
+          weightTon: Number(weightTon) || 1,
+          volumeCbm: Number(volumeCbm) || 1,
+          containerOrVehicleNo: containerOrVehicleNo.trim() || 'NON-UNIT',
+          vesselId: matchedVessel?.id || 'ves-001',
+          vesselName,
+          deckPosition: deckPosition.trim() || 'Palka Utama',
+          originPort,
+          destinationPort,
+          freightFee: Number(freightFee) || 0,
+          status,
+          hazardous
+        });
+        setSuccessToast(`Manifest muatan kargo baru B/L ${billOfLading} berhasil ditambahkan!`);
+      }
+      setIsModalOpen(false);
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err) {
+      console.error('Error submitting cargo:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsModalOpen(false);
   };
 
   const handleAdvanceStatus = async (c: Cargo) => {
@@ -211,6 +223,13 @@ export const CargoManifest: React.FC<CargoManifestProps> = ({
       </div>
 
       {/* Filter and Search */}
+      {successToast && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
+          <FileCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

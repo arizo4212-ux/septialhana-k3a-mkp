@@ -83,46 +83,58 @@ export const VesselMasterData: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const [successToast, setSuccessToast] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !code.trim()) return;
 
-    if (editingId) {
-      await updateVessel(editingId, {
-        name,
-        code,
-        type,
-        passengerCapacity: Number(passengerCapacity),
-        cargoCapacityTon: Number(cargoCapacityTon),
-        callSign,
-        captainName,
-        status,
-        currentPort,
-        destinationPort,
-        speedKnots: Number(speedKnots),
-        lat: Number(lat),
-        lng: Number(lng)
-      });
-    } else {
-      await addVessel({
-        name,
-        code,
-        type,
-        passengerCapacity: Number(passengerCapacity),
-        cargoCapacityTon: Number(cargoCapacityTon),
-        callSign,
-        captainName,
-        status,
-        currentPort,
-        destinationPort,
-        speedKnots: Number(speedKnots),
-        lat: Number(lat),
-        lng: Number(lng)
-      });
+    setIsSubmitting(true);
+    try {
+      if (editingId) {
+        await updateVessel(editingId, {
+          name: name.trim(),
+          code: code.trim(),
+          type,
+          passengerCapacity: Number(passengerCapacity) || 0,
+          cargoCapacityTon: Number(cargoCapacityTon) || 0,
+          callSign: callSign.trim() || 'PKXX',
+          captainName: captainName.trim() || 'Perwira Kapal',
+          status,
+          currentPort,
+          destinationPort,
+          speedKnots: Number(speedKnots) || 0,
+          lat: Number(lat) || -6.1,
+          lng: Number(lng) || 106.8
+        });
+        setSuccessToast(`Data kapal ${name} berhasil diperbarui!`);
+      } else {
+        await addVessel({
+          name: name.trim(),
+          code: code.trim(),
+          type,
+          passengerCapacity: Number(passengerCapacity) || 0,
+          cargoCapacityTon: Number(cargoCapacityTon) || 0,
+          callSign: callSign.trim() || 'PKXX',
+          captainName: captainName.trim() || 'Perwira Kapal',
+          status,
+          currentPort,
+          destinationPort,
+          speedKnots: Number(speedKnots) || 0,
+          lat: Number(lat) || -6.1,
+          lng: Number(lng) || 106.8
+        });
+        setSuccessToast(`Armada kapal baru ${name} berhasil didaftarkan!`);
+      }
+      setIsModalOpen(false);
+      resetForm();
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err) {
+      console.error('Error submitting vessel:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsModalOpen(false);
-    resetForm();
   };
 
   const handleDelete = async (id: string) => {
@@ -165,6 +177,13 @@ export const VesselMasterData: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
+      {successToast && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 shrink-0" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

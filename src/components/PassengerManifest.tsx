@@ -106,53 +106,65 @@ export const PassengerManifest: React.FC<PassengerManifestProps> = ({
     setIsModalOpen(true);
   };
 
+  const [successToast, setSuccessToast] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !nik.trim()) return;
 
+    setIsSubmitting(true);
     const matchedVessel = vessels.find(v => v.name === vesselName);
 
-    if (editingId) {
-      await updatePassenger(editingId, {
-        ticketNumber,
-        name,
-        nik,
-        gender,
-        age: Number(age),
-        phone,
-        vesselId: matchedVessel?.id || 'ves-001',
-        vesselName,
-        originPort,
-        destinationPort,
-        departureDate,
-        cabinClass,
-        seatNumber,
-        ticketPrice: Number(ticketPrice),
-        luggageKg: Number(luggageKg),
-        status
-      });
-    } else {
-      await addPassenger({
-        ticketNumber,
-        name,
-        nik,
-        gender,
-        age: Number(age),
-        phone,
-        vesselId: matchedVessel?.id || 'ves-001',
-        vesselName,
-        originPort,
-        destinationPort,
-        departureDate,
-        cabinClass,
-        seatNumber,
-        ticketPrice: Number(ticketPrice),
-        luggageKg: Number(luggageKg),
-        status
-      });
+    try {
+      if (editingId) {
+        await updatePassenger(editingId, {
+          ticketNumber,
+          name: name.trim(),
+          nik: nik.trim(),
+          gender,
+          age: Number(age) || 25,
+          phone: phone.trim(),
+          vesselId: matchedVessel?.id || 'ves-001',
+          vesselName,
+          originPort,
+          destinationPort,
+          departureDate,
+          cabinClass,
+          seatNumber: seatNumber.trim() || 'DEK-01',
+          ticketPrice: Number(ticketPrice) || 0,
+          luggageKg: Number(luggageKg) || 0,
+          status
+        });
+        setSuccessToast(`Manifest tiket ${name} (${ticketNumber}) berhasil diperbarui!`);
+      } else {
+        await addPassenger({
+          ticketNumber,
+          name: name.trim(),
+          nik: nik.trim(),
+          gender,
+          age: Number(age) || 25,
+          phone: phone.trim(),
+          vesselId: matchedVessel?.id || 'ves-001',
+          vesselName,
+          originPort,
+          destinationPort,
+          departureDate,
+          cabinClass,
+          seatNumber: seatNumber.trim() || 'DEK-01',
+          ticketPrice: Number(ticketPrice) || 0,
+          luggageKg: Number(luggageKg) || 0,
+          status
+        });
+        setSuccessToast(`Tiket manifest baru untuk ${name} (${ticketNumber}) berhasil diterbitkan!`);
+      }
+      setIsModalOpen(false);
+      setTimeout(() => setSuccessToast(''), 4000);
+    } catch (err) {
+      console.error('Error submitting passenger:', err);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsModalOpen(false);
   };
 
   const handleQuickBoarding = async (p: Passenger) => {
@@ -206,6 +218,13 @@ export const PassengerManifest: React.FC<PassengerManifestProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
+      {successToast && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
